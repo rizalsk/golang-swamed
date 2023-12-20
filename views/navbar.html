@@ -1,0 +1,32 @@
+<nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark" aria-label="Thirteenth navbar example" data-bs-theme="dark">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample11" aria-controls="navbarsExample11" aria-expanded="true" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="navbar-collapse d-lg-flex collapse" id="navbarsExample11" style="">
+            <a class="navbar-brand col-lg-3 me-0" href="#">
+                <img src="/public/icon.png" alt="" style="width: 50px;object-fit:contain;">
+                <span class="text-primary">CRUD</span>
+            </a>
+            <ul class="navbar-nav col-lg-6 justify-content-lg-center">
+                <li class="nav-item" id="nav-home"><a href="/" class="nav-link " aria-current="page"><i data-feather="home"></i> Home</a></li>
+                <li class="nav-item" id="nav-blog"><a href="/blogs" class="nav-link"><i data-feather="file-text"></i> CRUD</a></li>
+            </ul>
+            <!-- <div class="d-lg-flex col-lg-3 justify-content-lg-end">
+                <button class="btn btn-primary">Button</button>
+            </div> -->
+        </div>
+    </div>
+</nav>
+<script>
+    let currentNav = '{{ .nav }}';
+    if (currentNav == "home"){
+        $('#nav-home a').addClass("active")
+        $('#nav-blog a').removeClass("active")
+    }else{
+        $('#nav-blog a').addClass("active")
+        $('#nav-home a').removeClass("active")
+    }
+</script>
+

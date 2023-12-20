@@ -1,0 +1,302 @@
+<!--embedding the header file-->
+{{ template "header.html" .}}
+
+<!--writing some html tag between them-->
+    <div class="container-fluid pb-3 ">
+        <div class="row mb-2">
+            <div class="col row row-cols-1 justify-content-center align-items-center min-vh-50 py-5 bg-dark text-light bg-gradient">
+                <div class="d-flex justify-content-center align-items-center">
+                    <h3 >BUAT ARTIKEL BARU</h3>
+                </div>
+
+                <div class="d-flex justify-content-center align-items-center">
+                    <button type="button" class="btn btn-light py-5 px-4 rounded-pill" onclick="createArticle()">
+                        <i data-feather="file-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                {{ template "card-article.html" .}}
+            </div>
+        </div>
+    </div>
+
+    {{ template "modal.html" .}}
+    
+{{ template "footer.html" .}}
+
+<script>
+    
+    function resetForm(){
+        $('#f-title').val("")
+        $('#f-content').val("")
+        $('#f-banner_file').val("")
+        $('#image-preview').attr("src", defaultImage)
+        modalTitle = action == "new" ? "Artikel Baru" : "Edit Artikel"
+        $('#modalArticleTitle').text(modalTitle)
+    }
+
+    function closeModal(){
+        $('#modal-article').modal("hide")
+        resetForm()
+    }
+
+    function renderCard(data){
+        htmltext = ""
+        
+        $.each(data, function( index, article ) {
+            imgTag = article.banner !== '' ? uploadPath+article.banner : defaultImage;
+                    
+            htmltext += `
+            <div class="col p-3">
+                <div class="card w-auto" style="width: 18rem;">
+                    <img src="`+imgTag+`" class="card-img-top" alt="..." style="max-height: 200px;object-fit: contain;   background-color: #acacac;">
+                    <div class="card-body py-3">
+                        <div>
+                            <h5 class="card-title">`+truncate(article.title)+`</h5>
+                            <p class="card-text">`+truncate(article.content)+`</p>
+                        
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end ">
+                            <div class="btn-group">
+                                <a class="btn btn-sm btn-info" href="/blogs/`+article.id+`">
+                                    <i data-feather="eye"></i> 
+                                </a>
+                                <button type="button" class="btn btn-sm btn-warning round" onclick="editArticle(`+article.id+`)">
+                                    <i data-feather="edit"></i> 
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete(`+article.id+`)">
+                                    <i data-feather="trash-2"></i> 
+                                </button>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+
+        $('#row-card').html(htmltext)
+        feather.replace();
+    }
+
+    function renderTable(data){
+        htmltext = ""
+        
+        $.each(data, function( index, article ) {
+            imgTag = article.banner !== '' ? `
+            <div class="d-flex" style="max-height: 200px;">
+                        <img class="img-fluid" src="`+uploadPath+article.banner+`" alt="" style="object-fit: contain;">
+                    </div>` : "";
+                    
+            htmltext += `
+            <tr>
+                <td>
+                    `+article.id+`
+                </td>
+                <td>
+                    `+truncate(article.title)+`
+                </td>
+                <td>
+                    `+truncate(article.content)+`
+                </td>
+                <td>
+                    `+imgTag+`
+                </td>
+                <td>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="/blogs/`+article.id+`" class="btn btn-sm btn-info" onclick="readArticle(`+article.id+`)">
+                            <i data-feather="eye"></i> 
+                        </a>
+                        <button type="button" class="btn btn-sm btn-warning" onclick="editArticle(`+article.id+`)">
+                            <i data-feather="edit"></i> 
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteArticle(`+article.id+`)">
+                            <i data-feather="trash-2"></i> 
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            `;
+        });
+
+        $('#table-body').html(htmltext)
+        feather.replace();
+    }
+
+    function readArticles(){
+        $.ajax({
+            url: apiurl,
+            type: "GET",
+            contentType: 'application/json',
+        }).then(function (res) {
+            //renderTable(res.data)
+            renderCard(res.data)
+        }).catch(function (a) {
+            Toastify({
+                text: a.responseText,
+                className: "danger",
+                style: {
+                    background: "linear-gradient(to right, #e10f59, #f39557)",
+                }
+            }).showToast();
+        });
+    }
+
+    function createArticle(){
+        action = "new"
+        idEdit = 0
+        resetForm()
+        $('#modal-article').modal("show")
+    }
+
+    function saveNewArticle(){
+        form = $("#form-article")
+        data =  new FormData(form)
+        $('#loader').show()
+        $.ajax({
+            url: apiurl,
+            type: "POST",
+            data:  new FormData(this),
+            contentType: false,
+            cache: false,
+            processData:false,
+        }).then(function (res) {
+            readArticles()
+            closeModal()
+        }).catch(function (a) {
+            Toastify({
+                text: a.responseText,
+                className: "danger",
+                style: {
+                    background: "linear-gradient(to right, #e10f59, #f39557)",
+                }
+            }).showToast();
+        });
+        $('#loader').hide()
+    }
+    
+    function editArticle(id){
+        action = "edit"
+        idEdit = id
+        resetForm()
+        const fetchArticle = async () => {
+            const response = await fetch(apiurl+"/"+id);
+            const data = await response.json();
+            const article = await data.data;
+
+            $('#modal-article').modal("show")
+            $("#f-title").val(article.title)
+            $("#f-content").val(article.content)
+            if(article.banner !== ""){
+                $("#image-preview").attr("src", "/public/uploads/"+article.banner)
+            }
+            
+            return article
+        }
+
+        fetchArticle()
+        
+    }
+
+    function confirmDelete(id){
+        Swal.fire({
+            title: "Apakah anda ingin menghapus artikel ini?",
+            showDenyButton: true,
+            confirmButtonText: "Hapus",
+            denyButtonText: `Batal`
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+                urlDelete = apiurl+"/"+id
+                $('#loader').show();
+
+                deleteArticle(urlDelete)
+                .then(data => {
+                    Toastify({
+                        text: data.message,
+                        className: "success",
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                    
+                    readArticles()
+                })
+                .catch(err => {
+                    console.info("err", err)
+                    Toastify({
+                        text: err.responseText,
+                        className: "danger",
+                        style: {
+                            background: "linear-gradient(to right, #e10f59, #f39557)",
+                        }
+                    }).showToast();
+                })
+                
+            } else if (result.isDenied) {}
+            $('#loader').hide()
+        });
+    }
+
+    async function deleteArticle(url){
+        const response = await fetch(url, {
+            method: "DELETE",
+            mode: "cors",
+            cache: "no-cache",
+            credentials: "same-origin",
+            headers: {
+            },
+            redirect: "follow", 
+            referrerPolicy: "no-referrer",
+        });
+
+        return response.json();
+    }
+
+    $(function(){
+        
+        readArticles()
+
+        $('#form-article').submit(function(e){
+            e.preventDefault()
+            var $self = $(this);
+            tipe = action == "new" ? "POST" : "PUT"
+            endpoint = action == "new" ? apiurl : apiurl+"/"+idEdit
+            $('#loader').show()
+
+            $.ajax({
+                url: endpoint,
+                type: tipe,
+                data:  new FormData(this),
+                contentType: false,
+                cache: false,
+                processData:false,
+            }).then(function (res) {
+                console.log("res.message", res.message)
+                readArticles()
+                Toastify({
+                    text: res.message,
+                    className: "success",
+                    style: {
+                        background: "linear-gradient(to right, #00b09b, #96c93d)",
+                    }
+                }).showToast();
+                $('#modal-article').modal('hide')
+            }).catch(function (a) {
+                Toastify({
+                    text: a.responseText,
+                    className: "danger",
+                    style: {
+                        background: "linear-gradient(to right, #00b09b, #96c93d)",
+                    }
+                }).showToast();
+            });
+            $('#loader').hide()
+        })
+    })
+</script>

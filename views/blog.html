@@ -1,0 +1,193 @@
+{{ template "header.html" .}}
+<div class="container-fluid py-3">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/blogs">blogs</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Artikel</li>
+            </ol>
+        </nav>
+
+    </div>
+    <div class="px-5 mb-4 bg-body-tertiary rounded-3 d-flex justify-content-center">
+        <img id="art-banner" src="defaultImage" alt="">  
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="btn-group">
+                    
+                    <button type="button" class="btn btn-sm btn-warning round" onclick="editArticle()">
+                        <i data-feather="edit"></i> 
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete()">
+                        <i data-feather="trash-2"></i> 
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="row-12">
+                <div class="my-4 text-center">
+                    <h2 id="art-title"></h2>
+                </div>
+                <div>
+                    <p id="art-content"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ template "modal.html" .}}
+    
+{{ template "footer.html" .}}
+<script>
+    
+</script>
+<script>
+    let currentid = '{{ .id }}';
+    let article = {}
+
+    const editArticle = () => {
+        $("#f-title").val(article.title)
+        $("#f-content").val(article.content)
+        if(article.banner !== ""){
+            $("#image-preview").attr("src", "/public/uploads/"+article.banner)
+        }
+        $('#modal-article').modal('show')
+    }
+
+    function closeModal(){
+        $('#modal-article').modal("hide")
+    }
+
+    function confirmDelete(){
+        Swal.fire({
+            title: "Apakah anda ingin menghapus artikel ini?",
+            showDenyButton: true,
+            confirmButtonText: "Hapus",
+            denyButtonText: `Batal`
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+                urlDelete = apiurl+"/"+currentid
+                
+                deleteArticle(urlDelete)
+                .then(data => {
+                    Toastify({
+                        text: data.message,
+                        className: "success",
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+
+                    setTimeout(function (){
+                        window.location.replace("/blogs");
+                    }, 500)
+                })
+                .catch(err => {
+                    console.info("err", err)
+                    Toastify({
+                        text: err.responseText,
+                        className: "danger",
+                        style: {
+                            background: "linear-gradient(to right, #e10f59, #f39557)",
+                        }
+                    }).showToast();
+                })
+                
+            } else if (result.isDenied) {}
+            
+        });
+    }
+
+    async function deleteArticle(url){
+        const response = await fetch(url, {
+            method: "DELETE",
+            mode: "cors",
+            cache: "no-cache",
+            credentials: "same-origin",
+            headers: {
+            },
+            redirect: "follow", 
+            referrerPolicy: "no-referrer",
+        });
+
+        return response.json();
+    }
+
+    async function updateArticle(url = "", data = {}) {
+        const response = await fetch(url, {
+            method: "PUT",
+            mode: "cors",
+            cache: "no-cache",
+            credentials: "same-origin",
+            headers: {
+            },
+            redirect: "follow", 
+            referrerPolicy: "no-referrer",
+            body: data,
+        });
+
+        return response.json();
+    }
+
+    $(function(){
+        const fetchData = async () => {
+            const resp = await fetch(apiurl+"/"+currentid)
+            const data = await resp.json()
+            article = await data.data
+            $('#art-title').text(article.title)
+            $('#art-content').text(article.content)
+            let imageUrl = defaultImage
+            if (article.banner !== ""){
+                imageUrl = uploadPath+article.banner
+            }
+
+            $('#art-banner').attr("src", imageUrl)
+            
+        }
+        fetchData()
+
+         $('#form-article').submit(function(e){
+            e.preventDefault()
+            var $self = $(this);
+            const req = new FormData(this)
+            $('#loader').show()
+            updateArticle(apiurl+"/"+currentid, req).then(resp => {
+                
+                toasterResp = toastClass.success;
+                messageResp = resp.message 
+                if (resp.error){
+                    toasterResp = toastClass.danger; 
+                    messageResp = "error: " + resp.error
+                }else{
+                    fetchData();
+                    $('#modal-article').modal('hide')
+                }
+
+                Toastify({
+                    text: messageResp ,
+                    className: "success",
+                    style: {
+                        background: toasterResp,
+                    }
+                }).showToast();
+            }).catch(er => {
+                console.log(er)
+                Toastify({
+                    text: er.responseText,
+                    className: "danger",
+                    style: {
+                        background: toastClass.danger,
+                    }
+                }).showToast();
+
+            })
+            $('#loader').hide()
+        })
+    })
+</script>

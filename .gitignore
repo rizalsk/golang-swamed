@@ -1,0 +1,15 @@
+/tmp
+/tmp-*
+/build
+/vendor
+/public/uploads
+/public/node_modules
+/node_modules
+.env
+.env.backup
+.env.production
+/.fleet
+/.idea
+/.vscode
+*.exe
+./gocrud

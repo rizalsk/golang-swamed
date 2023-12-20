@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+
+  <head>
+   
+    <title>{{ .title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="/public/icon-c.png">
+    <link rel="stylesheet" href="/public/assets/bootstrap5/dist/css/bootstrap.min.css">              
+    <link rel="stylesheet" href="/public/assets/toastify/toastify.css">              
+    <script src="/public/assets/js/jquery-3.7.1.min.js"></script>
+    <script src="/public/assets/js/popper.min.js"></script>
+    <script src="/public/assets/bootstrap5/dist/js/bootstrap.min.js" ></script>
+    <script src="/public/assets/feather/dist/js/feather.min.js"></script>
+    <script src="/public/assets/toastify/toastify.js"></script>
+    <script src="/public/assets/js/sweetalert.min.js"></script>
+
+    <style>
+      #loader{
+        height: 100vh;
+        width: 100vw;
+        background-color: #eeeeeeb8;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        overflow: hidden;
+        display: none;
+        z-index: 999999999;
+      }
+    </style>
+    <script>
+      var action = "new"
+      var apiurl = "/api/v1/articles"
+      var idEdit = 0
+      var defaultImage = "/public/assets/images/no-image.jpg"
+      const uploadPath = "/public/uploads/"
+      defaultlength = 70
+      const toastClass = {
+        success: "linear-gradient(to right, #00b09b, #96c93d)",
+        warning: "linear-gradient(to right, #caba30, #d7310a)",
+        danger: "linear-gradient(to right, #e10f59, #f39557)",
+      }
+      const truncate = (text) => text.length > defaultlength ? text.substring(0, defaultlength)+"..." : text;
+    </script>
+  </head>
+  <body>
+    {{ template "loader.html" . }}
+    {{ template "navbar.html" . }}

@@ -1,0 +1,53 @@
+<!-- Modal -->
+<div class="modal fade" id="modal-article" tabindex="-1" aria-labelledby="modalArticleTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered ">
+        <div class="modal-content">
+            <form id="form-article" action="/api/v1/articles" enctype="multipart/form-data">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modalArticleTitle">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                
+                <div class="mb-3">
+                    <label for="f-title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="f-title" name="title" >
+                </div>
+                <div class="mb-3">
+                    <label for="f-content" class="form-label">Content</label>
+                    <textarea class="form-control" id="f-content" name="content" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="f-banner_file" class="form-label">Banner</label>
+                    <input class="form-control" type="file" name="banner_file" id="f-banner_file">
+                    <script>
+                        const input = document.getElementById('f-banner_file');
+                        const previewPhoto = () => {
+                            const file = input.files;
+                            if (file) {
+                                const fileReader = new FileReader();
+                                const preview = document.getElementById('image-preview');fileReader.onload = function (event) {
+                                    preview.setAttribute('src', event.target.result);
+                                }
+                                fileReader.readAsDataURL(file[0]);
+                            }
+                        }
+                        input.addEventListener("change", previewPhoto);
+                    
+                    </script>
+                </div>
+                <div class="row">
+                    <div class="col d-flex align-items-center justify-content-center">
+                        <img id="image-preview" src="/public/assets/images/no-image.jpg" class="img-fluid" alt="...">
+                    </div>
+                </div>
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-close-modal" class="btn btn-secondary" onclick="closeModal()">Close</button>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
